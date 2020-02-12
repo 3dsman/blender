@@ -136,14 +136,18 @@ static void wm_block_splash_add_labels(uiBlock *block, int x, int y)
     version_cycle_number = " " STRINGIFY(BLENDER_VERSION_CYCLE_NUMBER);
   }
 
+  const char *version_suffix = NULL;
+  version_suffix = "Nodes 0.3.0";
+
   char version_buf[256] = "\0";
   BLI_snprintf(version_buf,
                sizeof(version_buf),
-               "v %d.%d%s%s",
+               "v %d.%d%s%s %s",
                BLENDER_VERSION / 100,
                BLENDER_VERSION % 100,
                version_cycle,
-               version_cycle_number);
+               version_cycle_number,
+               version_suffix);
 
   wm_block_splash_add_label(block, version_buf, x, &y);
 

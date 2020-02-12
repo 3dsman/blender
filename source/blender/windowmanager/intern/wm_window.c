@@ -40,6 +40,7 @@
 
 #include "BLI_math.h"
 #include "BLI_blenlib.h"
+#include "BLI_threads.h"
 #include "BLI_utildefines.h"
 
 #include "BLT_translation.h"
@@ -1618,11 +1619,52 @@ static int wm_window_timer(const bContext *C)
   return retval;
 }
 
+ThreadQueue* wm_main_thread_queue = NULL;
+
+typedef struct MainThreadWork {
+    MainThreadCallback callback;
+    void *user_data;
+} MainThreadWork;
+
+void WM_run_in_main_thread(MainThreadCallback callback, void *user_data)
+{
+    MainThreadWork* work = malloc(sizeof(MainThreadWork));
+    work->callback = callback;
+    work->user_data = user_data;
+    BLI_thread_queue_push(wm_main_thread_queue, work);
+}
+
+void wm_window_create_main_queue()
+{
+    //Never freed
+    if (wm_main_thread_queue == NULL) {
+        wm_main_thread_queue = BLI_thread_queue_init();
+    }
+}
+
+int wm_window_process_main_queue_events()
+{
+    BLI_assert(BLI_thread_is_main());
+    int count = 0;
+
+    MainThreadWork *work = NULL;
+    while (work = BLI_thread_queue_pop_timeout(wm_main_thread_queue, 0)) {
+        (work->callback)(work->user_data);
+
+        free(work);
+
+        count++;
+    }
+    return count;
+}
+
 void wm_window_process_events(const bContext *C)
 {
   int hasevent;
 
   BLI_assert(BLI_thread_is_main());
+
+  wm_window_process_main_queue_events();
 
   hasevent = GHOST_ProcessEvents(g_system, 0); /* 0 is no wait */
 

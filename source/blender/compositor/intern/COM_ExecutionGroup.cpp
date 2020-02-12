@@ -525,6 +525,8 @@ bool ExecutionGroup::scheduleChunk(unsigned int chunkNumber)
   return false;
 }
 
+extern "C" int wm_window_process_main_queue_events();
+
 bool ExecutionGroup::scheduleChunkWhenPossible(ExecutionSystem *graph, int xChunk, int yChunk)
 {
   if (xChunk < 0 || xChunk >= (int)this->m_numberOfXChunks) {
@@ -541,6 +543,10 @@ bool ExecutionGroup::scheduleChunkWhenPossible(ExecutionSystem *graph, int xChun
 
   // chunk is scheduled, but not executed
   if (this->m_chunkExecutionStates[chunkNumber] == COM_ES_SCHEDULED) {
+      if (BLI_thread_is_main()) {
+        // When Blender is run in background mode, we need to pump events manually here
+        wm_window_process_main_queue_events();
+      }
     return false;
   }
 

@@ -114,6 +114,7 @@ extern "C" {
 #include "COM_ViewerNode.h"
 #include "COM_ZCombineNode.h"
 #include "COM_PixelateNode.h"
+#include "COM_GlslNode.h"
 #include "COM_PlaneTrackDeformNode.h"
 
 bool Converter::is_fast_node(bNode *b_node)
@@ -396,6 +397,9 @@ Node *Converter::convert(bNode *b_node)
       break;
     case CMP_NODE_CORNERPIN:
       node = new CornerPinNode(b_node);
+      break;
+    case CMP_NODE_GLSL:
+      node = new GlslNode(b_node);
       break;
     case CMP_NODE_SUNBEAMS:
       node = new SunBeamsNode(b_node);

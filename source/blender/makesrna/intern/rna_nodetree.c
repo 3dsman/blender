@@ -3886,6 +3886,23 @@ static void def_group_output(StructRNA *srna)
   RNA_def_property_update(prop, NC_NODE | NA_EDITED, "rna_Node_update");
 }
 
+static void def_cmp_glsl(StructRNA *srna)
+{
+    PropertyRNA *prop;
+
+    RNA_def_struct_sdna_from(srna, "NodeGlsl", "storage");
+
+    prop = RNA_def_property(srna, "filepath", PROP_STRING, PROP_FILEPATH);
+    RNA_def_property_string_sdna(prop, NULL, "filepath");
+    RNA_def_property_ui_text(prop, "Shader file", "");
+    RNA_def_property_update(prop, NC_NODE | NA_EDITED, "rna_Node_update");
+
+    prop = RNA_def_property(srna, "gamma", PROP_BOOLEAN, PROP_NONE);
+    RNA_def_property_boolean_sdna(prop, NULL, "flag", CMP_NODE_GLSL_GAMMA);
+    RNA_def_property_ui_text(prop, "Gamma correction", "Apply gamma correction to result image");
+    RNA_def_property_update(prop, NC_NODE | NA_EDITED, "rna_Node_update");
+}
+
 static void def_group(StructRNA *srna)
 {
   PropertyRNA *prop;
