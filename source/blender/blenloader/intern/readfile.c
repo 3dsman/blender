@@ -680,6 +680,9 @@ static Main *blo_find_main(FileData *fd, const char *filepath, const char *relab
   /* Important, consistency with main ID reading code from read_libblock(). */
   lib->id.us = ID_FAKE_USERS(lib);
 
+  /* Matches lib_link_library(). */
+  id_us_ensure_real(&lib->id);
+
   BLI_strncpy(lib->name, filepath, sizeof(lib->name));
   BLI_strncpy(lib->filepath, name1, sizeof(lib->filepath));
 
@@ -5388,8 +5391,7 @@ static void direct_link_modifiers(FileData *fd, ListBase *lb, Object *ob)
       blo_reportf_wrap(
           fd->reports,
           RPT_WARNING,
-          TIP_(
-              "Possible data loss when saving this file! %s modifier is deprecated (Object: %s)."),
+          TIP_("Possible data loss when saving this file! %s modifier is deprecated (Object: %s)"),
           md->name,
           ob->id.name + 2);
       md = modifier_replace_with_fluid(fd, ob, lb, md);
@@ -5399,8 +5401,7 @@ static void direct_link_modifiers(FileData *fd, ListBase *lb, Object *ob)
       blo_reportf_wrap(
           fd->reports,
           RPT_WARNING,
-          TIP_(
-              "Possible data loss when saving this file! %s modifier is deprecated (Object: %s)."),
+          TIP_("Possible data loss when saving this file! %s modifier is deprecated (Object: %s)"),
           md->name,
           ob->id.name + 2);
       md = modifier_replace_with_fluid(fd, ob, lb, md);
@@ -7744,11 +7745,10 @@ static void lib_link_clipboard_restore(struct IDNameLib_Map *id_map)
   BKE_sequencer_base_recursive_apply(&seqbase_clipboard, lib_link_seq_clipboard_cb, id_map);
 }
 
-static int lib_link_main_data_restore_cb(void *user_data,
-                                         ID *UNUSED(id_self),
-                                         ID **id_pointer,
-                                         int cb_flag)
+static int lib_link_main_data_restore_cb(LibraryIDLinkCallbackData *cb_data)
 {
+  const int cb_flag = cb_data->cb_flag;
+  ID **id_pointer = cb_data->id_pointer;
   if (cb_flag & IDWALK_CB_PRIVATE || *id_pointer == NULL) {
     return IDWALK_RET_NOP;
   }
@@ -7759,11 +7759,14 @@ static int lib_link_main_data_restore_cb(void *user_data,
   if (GS((*id_pointer)->name) == ID_GR) {
     Collection *collection = (Collection *)*id_pointer;
     if (collection->flag & COLLECTION_IS_MASTER) {
+      /* We should never reach that point anymore, since master collection private ID should be
+       * properly tagged with IDWALK_CB_PRIVATE. */
+      BLI_assert(0);
       return IDWALK_RET_NOP;
     }
   }
 
-  struct IDNameLib_Map *id_map = user_data;
+  struct IDNameLib_Map *id_map = cb_data->user_data;
 
   /* Note: Handling of usercount here is really bad, defining its own system...
    * Will have to be refactored at some point, but that is not top priority task for now.

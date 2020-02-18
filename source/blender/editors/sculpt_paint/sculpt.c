@@ -1111,7 +1111,7 @@ bool sculpt_brush_test_circle_sq(SculptBrushTest *test, const float co[3])
 
 bool sculpt_brush_test_cube(SculptBrushTest *test,
                             const float co[3],
-                            float local[4][4],
+                            const float local[4][4],
                             const float roundness)
 {
   float side = M_SQRT1_2;
@@ -1637,7 +1637,7 @@ static void calc_area_center(
       .use_area_cos = true,
   };
 
-  AreaNormalCenterTLSData anctd = {0};
+  AreaNormalCenterTLSData anctd = {{{0}}};
 
   PBVHParallelSettings settings;
   BKE_pbvh_parallel_range_settings(&settings, (sd->flags & SCULPT_USE_OPENMP), totnode);
@@ -2050,8 +2050,8 @@ bool sculpt_search_circle_cb(PBVHNode *node, void *data_v)
   const float dist_sq = dist_squared_ray_to_aabb_v3(
       data->dist_ray_to_aabb_precalc, bb_min, bb_max, dummy_co, &dummy_depth);
 
-  /* Seems like debug code. Maybe this fucntion can just return true if the node is not fully
-   * masked. */
+  /* Seems like debug code.
+   * Maybe this function can just return true if the node is not fully masked. */
   return dist_sq < data->radius_squared || true;
 }
 
@@ -6864,7 +6864,7 @@ static const char *sculpt_tool_name(Sculpt *sd)
     case SCULPT_TOOL_POSE:
       return "Pose Brush";
     case SCULPT_TOOL_MULTIPLANE_SCRAPE:
-      return "Multiplane Scrape Brush";
+      return "Multi-plane Scrape Brush";
     case SCULPT_TOOL_SLIDE_RELAX:
       return "Slide/Relax Brush";
   }
@@ -10458,7 +10458,7 @@ static int sculpt_mask_expand_invoke(bContext *C, wmOperator *op, const wmEvent 
   BKE_pbvh_parallel_range(0, ss->filter_cache->totnode, &data, sculpt_expand_task_cb, &settings);
 
   const char *status_str = TIP_(
-      "Move the mouse to expand the mask from the active vertex. LBM: confirm mask, ESC/RMB: "
+      "Move the mouse to expand the mask from the active vertex. LMB: confirm mask, ESC/RMB: "
       "cancel");
   ED_workspace_status_text(C, status_str);
 
