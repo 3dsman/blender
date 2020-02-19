@@ -1636,10 +1636,14 @@ void WM_run_in_main_thread(MainThreadCallback callback, void *user_data)
 
 void wm_window_create_main_queue()
 {
-    //Never freed
     if (wm_main_thread_queue == NULL) {
         wm_main_thread_queue = BLI_thread_queue_init();
     }
+}
+
+void wm_window_free_main_queue()
+{
+    BLI_thread_queue_free(wm_main_thread_queue);
 }
 
 int wm_window_process_main_queue_events()
