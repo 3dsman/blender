@@ -7,23 +7,62 @@
 #include "BKE_global.h"
 #include "BKE_main.h"
 #include "BLI_path_util.h"
+#include "DNA_text_types.h"
+#include <fstream>
 
 GlslNode::GlslNode(bNode *editorNode) : Node(editorNode)
 {
 /* pass */
 }
 
+static std::string get_text_datablock_content(ID* id)
+{
+    Text *text = (Text *)id;
+    if(text)
+    {
+        std::string output;
+        TextLine *ln;
+        for (ln = (TextLine *)text->lines.first; ln; ln = ln->next) {
+            output += ln->line;
+            output += '\n';
+        }
+        return output;
+
+    }
+    return "";
+}
+
+std::string readScriptContent(const std::string& path)
+{
+    std::ifstream input(path);
+    std::stringstream buffer;
+    buffer << input.rdbuf();
+    return buffer.str();
+}
+
 void GlslNode::convertToOperations(NodeConverter &converter, const CompositorContext &context) const
 {
     const NodeGlsl* rna = (NodeGlsl*)this->getbNode()->storage;
+    bNode *node = this->getbNode();
     const Scene* scene = context.getScene();
 
-    char absolute[FILE_MAX] = { 0 };
-    strcpy(absolute, rna->filepath);
-    BLI_path_abs(absolute, G.main->name);
+    std::string fragment;
 
+    switch (rna->mode) {
+      case NODE_GLSL_EXTERNAL:
+        fragment = readScriptContent(rna->filepath);
+        break;
+      case NODE_GLSL_INTERNAL:
+            if (node->id) {
+                fragment = get_text_datablock_content(node->id);
+            }else
+            {
+                fragment = "\n";
+            }
+        break;
+    }
     GlslOperationParams params;
-    params.absolute = absolute;
+    params.fragment = fragment;
     params.frameCurrent = BKE_scene_frame_get(scene);
     params.frameTime = 0; //Set later
     params.frameDelta = 1.0f / scene->r.frs_sec; //Assume steady progress

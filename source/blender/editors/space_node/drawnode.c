@@ -2664,8 +2664,19 @@ static void node_composit_buts_cornerpin(uiLayout *UNUSED(layout),
 
 static void node_composit_buts_glsl(uiLayout *layout, bContext *UNUSED(C), PointerRNA *ptr)
 {
+    uiLayout *row;
     uiItemL(layout, IFACE_("Fragment shader:"), ICON_NONE);
-    uiItemR(layout, ptr, "filepath", 0, "", ICON_NONE);
+    row = uiLayoutRow(layout, false);
+    uiItemR(row, ptr, "mode", UI_ITEM_R_EXPAND, NULL, ICON_NONE);
+
+    row = uiLayoutRow(layout, true);
+
+    if (RNA_enum_get(ptr, "mode") == NODE_IES_INTERNAL) {
+      uiItemR(row, ptr, "fragment", 0, "", ICON_NONE);
+    }
+    else {
+      uiItemR(row, ptr, "filepath", 0, "", ICON_NONE);
+    }
     uiItemR(layout, ptr, "gamma", 0, NULL, ICON_NONE);
 }
 

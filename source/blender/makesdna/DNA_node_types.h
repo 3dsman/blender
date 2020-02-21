@@ -1016,7 +1016,10 @@ typedef struct NodeShaderTexIES {
 } NodeShaderTexIES;
 
 typedef struct NodeGlsl {
-  char filepath[1024]; /* 1024 = FILE_MAX */
+  int mode;
+
+  /* 1024 = FILE_MAX */
+  char filepath[1024];
   char flag;
   char _pad[3];
 } NodeGlsl;
@@ -1050,6 +1053,10 @@ typedef struct NodeDenoise {
 
 /* script node flag */
 #define NODE_SCRIPT_AUTO_UPDATE 1
+
+/* GLSL node mode */
+#define NODE_GLSL_INTERNAL 0
+#define NODE_GLSL_EXTERNAL 1
 
 /* GLSL node flag */
 #define CMP_NODE_GLSL_GAMMA 1

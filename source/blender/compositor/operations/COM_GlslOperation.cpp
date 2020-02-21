@@ -6,7 +6,6 @@
 #include "GPU_glew.h"
 #include "DRW_engine.h"
 #include "GPU_matrix.h"
-#include <fstream>
 
 #include "COM_GlslOperation.h"
 
@@ -286,14 +285,6 @@ void glslMainThreadCallback(void* userData)
     BLI_condition_notify_all(&data->condition);
 }
 
-std::string readScriptContent(const std::string& path)
-{
-    std::ifstream input(path);
-    std::stringstream buffer;
-    buffer << input.rdbuf();
-    return buffer.str();
-}
-
 MemoryBuffer *GlslOperation::createMemoryBuffer(rcti *source)
 {
     rcti rect;
@@ -354,7 +345,7 @@ MemoryBuffer *GlslOperation::createMemoryBuffer(rcti *source)
     threadResult.width = rect.xmax;
     threadResult.height = rect.ymax;
     threadResult.output = result->getBuffer();
-    threadResult.script = readScriptContent(m_params.absolute);
+    threadResult.script = m_params.fragment;
 
     // Run OpenGL operations in the main thread and wait until they are ready
     WM_run_in_main_thread(glslMainThreadCallback, &threadResult);

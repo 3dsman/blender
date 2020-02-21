@@ -10,7 +10,7 @@
 #define GLSL_VALUE_SOCKETS 5
 
 struct GlslOperationParams {
-    std::string absolute;
+    std::string fragment;
     float input0[4];
     float frameCurrent;
     float frameTime;
